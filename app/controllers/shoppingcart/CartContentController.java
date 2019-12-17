@@ -12,8 +12,15 @@ import com.commercetools.sunrise.shoppingcart.CartFinder;
 import com.commercetools.sunrise.shoppingcart.content.SunriseCartContentController;
 import com.commercetools.sunrise.shoppingcart.content.viewmodels.CartPageContentFactory;
 import com.commercetools.sunrise.wishlist.MiniWishlistControllerComponent;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.sphere.sdk.carts.Cart;
+import play.libs.Json;
+import play.mvc.Result;
 
 import javax.inject.Inject;
+import java.util.concurrent.CompletionStage;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 @LogMetrics
 @NoCache
@@ -31,6 +38,24 @@ public final class CartContentController extends SunriseCartContentController {
                                  final CartFinder cartFinder,
                                  final CartPageContentFactory pageContentFactory) {
         super(contentRenderer, cartFinder, pageContentFactory);
+    }
+
+    public CompletionStage<Result> getCurrentCart() {
+        return getCartFinder().get().thenComposeAsync(
+                cartOpt -> cartOpt.map(this::handleCurrentCart).orElse(handleCartNotFound()));
+    }
+
+    private CompletionStage<Result> handleCartNotFound() {
+        return supplyAsync(() -> {
+            return notFound("Curt not found");
+        });
+    }
+
+    private CompletionStage<Result> handleCurrentCart(Cart cart) {
+        return supplyAsync(() -> {
+            JsonNode jsonNode = Json.toJson(cart);
+            return ok(jsonNode);
+        });
     }
 
     @Override

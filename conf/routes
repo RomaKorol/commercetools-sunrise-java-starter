@@ -61,6 +61,7 @@ POST        /:languageTag/cart/discount/add                                     
 # Add a discount code to the cart
 POST        /:languageTag/cart/discount/remove                                  @controllers.shoppingcart.RemoveDiscountCodeController.process(languageTag: String)
 
+GET        /cart/details                                           @controllers.shoppingcart.CartContentController.getCurrentCart
 
 # CHECKOUT
 # ~~~~~
